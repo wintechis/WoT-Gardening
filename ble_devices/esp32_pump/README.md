@@ -26,7 +26,7 @@ After the program code has been uploaded, the ESP32 module is waiting to connect
 
 ## TODO
 The code is still based on the function to control the internal LED light of the ESP32 module. As soon as a Bluetooth LE connection is established, the values 'led_on' and 'led_off' can be passed as parameters.
-- [-] Simply True or False should be enough here respectively 1 and 0.
+- [x] Simply True or False should be enough here respectively 1 and 0.
 
 It is also possible to receive values from the ESP32 module. This is done via the Serial Monitor in the Arduino IDE.
 - [ ] This function could be deactivated if necessary. Actually, we only need write access.
