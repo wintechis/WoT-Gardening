@@ -1,0 +1,9 @@
+{
+  "scripts": {
+    "build": "tsc -p ./node_modules/Bluetooth-Bindings"
+  },
+  "dependencies": {
+    "@node-wot/core": "0.8.1",
+    "Bluetooth-Bindings": "github:wintechis/Bluetooth-Bindings#00a28b004198d7eca1d4d2388eb40d7fc4cc929d"
+  }
+}
