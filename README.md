@@ -17,6 +17,9 @@
 - [ ] **CAN** As an operator, I want to access the device using Read-Write Linked Data.
 ***
 
+#### Question
+- could it be a problem to connect more than one device with RPi via BLE
+
 ## Installation
 ...
 ## Tutorial

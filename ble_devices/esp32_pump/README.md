@@ -13,7 +13,7 @@ Waiting a client connection to notify...
 ____________________________________________________________________
 WiFi MAC address of ESP32:	C8:C9:A3:D8:CF:20
 BLE MAC address of ESP32:	C8:C9:A3:D8:CF:22
-Service UUID:			    c9c0ba7c-72e1-11ed-a1eb-0242ac120002
+Service UUID:		        c9c0ba7c-72e1-11ed-a1eb-0242ac120002
 Characteristic UUID RX:		2e48ebbe-72e6-11ed-a1eb-0242ac120002
 Characteristic UUID TX:		35dd80c4-72e6-11ed-a1eb-0242ac120002
 ### GATT server
@@ -27,7 +27,7 @@ After the program code has been uploaded, the ESP32 module is waiting to connect
 
 ## TODO
 The code is still based on the function to control the internal LED light of the ESP32 module. As soon as a Bluetooth LE connection is established, the values 'led_on' and 'led_off' can be passed as parameters.
-- [x] Simply True or False should be enough here respectively 1 and 0.
+- [x] Simply True or False should be enough here or 1 and 0.
 - [ ] Change function and function call 'putLED_on_off' to 'power_on_off' and remove LED_BUILDIN variable. Otherwise, you can keep this code and save it under a new folder 'test'. This might make the most sense.
 
 It is also possible to receive values from the ESP32 module. This is done via the Serial Monitor in the Arduino IDE.
