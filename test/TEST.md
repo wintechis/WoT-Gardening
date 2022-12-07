@@ -12,10 +12,9 @@ pair: it's not necessary better use 'connect'
 > menu gatt
 > select-attribute 2e48ebbe-72e6-11ed-a1eb-0242ac120002
 ```
-write 0x31 for on and 0x30 for off
-```
-> write "0x31"
-```
+write 0x31 for on and 0x30 for off<br>
+`> write "0x31"`
+
 show all paired devices:
 ```
 > paired-devices

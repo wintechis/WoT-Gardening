@@ -18,9 +18,17 @@
 ***
 
 #### Question
-- could it be a problem to connect more than one device with RPi via BLE
+- could it be a problem to connect more than one device with RPi via BLE - is there a limit?
+***
+
+## Preconditions
+- node v19.1.0
+- npm 8.19.3
 
 ## Installation
-...
+- Download the project
+- Install all packages with `npm install`
+- Build the project with `npm run build`
+
 ## Tutorial
 ...
