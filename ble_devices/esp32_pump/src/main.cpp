@@ -20,8 +20,11 @@ byte rxload = 0x30; // = 0x30 => ASCII => 0 (:= power off)
 
 BLECharacteristic *bleCharacteristic;
 
-uint8_t txValue = 0;
+// txValue := transfer data
+char* txValue = "off";
+
 long lastMsg = 0;
+long lastMsgSend = 0;
 
 // create new UUID https://www.uuidgenerator.net/
 // 'service' UUID is a collection of related information
@@ -145,12 +148,28 @@ void putLED_on_off(int rx) {
   if(rx == 0x31) {
     Serial.println("LED on.");
     digitalWrite(LED_BUILTIN, HIGH);
+    // set status 'on'
+    setStatus("on");
   } else if(rx == 0x30) {
     Serial.println("LED off.");
     digitalWrite(LED_BUILTIN, LOW);
+    // set status 'off'
+    setStatus("off");
   } else {
     Serial.println("Valid values are: 30 | 31");
   }
+}
+
+// set status 'on' or 'off'
+void setStatus(char* status) {
+  txValue = status;
+}
+
+// returns status 'on' or 'off'
+void getStatus() {
+  const char* value = txValue;
+  bleCharacteristic->setValue(value);
+  bleCharacteristic->notify();
 }
 
 void loop() {
@@ -162,14 +181,13 @@ void loop() {
         putLED_on_off(rxload);  // execute LED on/off function
         rxload = 0;
     }
-
     /*  TESTING:
         you can see what you have sent if you have connected to the ESP32 
         via another device and listen via the channel notify. It is only 
         used for testing and is not essential for the control of the pump.
         Channel TX
     */
-    if(Serial.available() > 0){
+    /*if(Serial.available() > 0){
         // reads user input - you can check what you send if you connect
         String str = Serial.readString();
         Serial.println("you sent: " + str);
@@ -177,7 +195,15 @@ void loop() {
         const char *newValue = str.c_str();
         bleCharacteristic->setValue(newValue);
         bleCharacteristic->notify();
-    }
+    }*/
     lastMsg = now;
   }
+  // return status of esp32 - power on or off message all 1 seconds
+  if (now - lastMsgSend > 1000) {
+    if(deviceConnected) {
+      getStatus();
+    }
+    lastMsgSend = now;
+  }
 }
+
