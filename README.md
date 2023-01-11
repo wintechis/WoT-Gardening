@@ -47,8 +47,8 @@ Get the current state of the esp32 module (pump)<br>
 Change the state to ON:<br>
 `POST http://192.168.1.122:8080/power`<br>
 `Type: JSON` ***NOTE: even if JSON is already preset, you have to confirm the 'Type' again to JSON. Otherwise it will not work.***<br>
-`value=value` and `key=31`<br>
+Name: `value` and Value: `31`<br>
 
 Change state to OFF:<br>
-Choose `key=30`<br>
+Name : `value` and  Value: `30`<br>
 
