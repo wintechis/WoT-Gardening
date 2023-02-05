@@ -16,7 +16,7 @@
 #define bleEspName "ESP32_ble"
 
 bool deviceConnected = false; // default value
-byte rxload = 0x30; // = 0x30 => ASCII => 0 (:= power off)
+int rxload = 0x42; // it's just a guarantee that the only valid values are 1 or 0
 
 BLECharacteristic *bleCharacteristic;
 
@@ -54,8 +54,8 @@ class MyCallbacks: public BLECharacteristicCallbacks {
     void onWrite(BLECharacteristic *pCharacteristic) {
       std::string rxValue = pCharacteristic->getValue();
       
-      if (rxValue.length() > 0) {
-        rxload = 0;
+      if (rxValue.length() > 0) { 
+        rxload = 42;
         Serial.println("length = " + rxValue.length());
         for (int i = 0; i < rxValue.length(); i++) { 
           rxload = (int)rxValue[i];
@@ -93,8 +93,8 @@ void setupBLE() {
   bleCharacteristic->setCallbacks(new MyCallbacks());
 
   // start service and server
-  // bleServer->getAdvertising: retrieve the advertising object that can be used to advertise the existence of the server.
   bleService->start();
+  // retrieve the advertising object that can be used to advertise the existence of the server.
   bleServer->getAdvertising()->start();
   
   Serial.println("...\nWaiting a client connection to notify...");
@@ -142,21 +142,20 @@ void setup() {
 }
 
 // put intern LED 'on' or 'off'
-// on :=  0x31 (dec = 49; ascii-symbol = 1)
-// off := 0x30 (dec = 49; ascii-symbol = 0)
+// on :=  0x1 
+// off := 0x0 
 void putLED_on_off(int rx) {
-  if(rx == 0x31) {
+  if(rx == 0x1) {
     Serial.println("LED on.");
     digitalWrite(LED_BUILTIN, HIGH);
     // set status 'on'
     setStatus("on");
-  } else if(rx == 0x30) {
+  } else if(rx == 0x0) {
     Serial.println("LED off.");
     digitalWrite(LED_BUILTIN, LOW);
-    // set status 'off'
     setStatus("off");
   } else {
-    Serial.println("Valid values are: 30 | 31");
+    Serial.println("Valid values are: 0x0 | 0x1");
   }
 }
 
@@ -177,25 +176,10 @@ void loop() {
   
   // checks all 0.1 seconds if a new message has received
   if (now - lastMsg > 100) {
-    if (deviceConnected && rxload != 0) {
-        putLED_on_off(rxload);  // execute LED on/off function
-        rxload = 0;
+      if (deviceConnected && (rxload == 0x1 || rxload == 0x0)) {
+        putLED_on_off(rxload);
+        rxload = 42;
     }
-    /*  TESTING:
-        you can see what you have sent if you have connected to the ESP32 
-        via another device and listen via the channel notify. It is only 
-        used for testing and is not essential for the control of the pump.
-        Channel TX
-    */
-    /*if(Serial.available() > 0){
-        // reads user input - you can check what you send if you connect
-        String str = Serial.readString();
-        Serial.println("you sent: " + str);
-
-        const char *newValue = str.c_str();
-        bleCharacteristic->setValue(newValue);
-        bleCharacteristic->notify();
-    }*/
     lastMsg = now;
   }
   // return status of esp32 - power on or off message all 1 seconds
@@ -206,4 +190,3 @@ void loop() {
     lastMsgSend = now;
   }
 }
-
