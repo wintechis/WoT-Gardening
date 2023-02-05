@@ -15,7 +15,7 @@ const app = express();
 const port = 8080;
 const ip = "192.168.1.61";
 
-// middleware for PUSH
+// middleware for PUSH requests
 app.use(express.json());
 
 
@@ -23,12 +23,14 @@ function sleep(ms) {
   return new Promise(resolve => setTimeout(resolve, ms));
 }
 
+// Required steps to create a servient for creating a thing (for more information see node-wot)
 const servient = new Servient();
+
+// Bluetooth protocol binding (for more information see Bluetooth-bindings)
 servient.addClientFactory(new Bluetooth_client_factory.default());
 
 /**
- * @file thing description based on BLE of a pump
- * 
+ * @file thing description based on BLE of a pump and describes an endpoint
  */
 const td_pump_ble = {
   '@context': [
@@ -105,8 +107,7 @@ const td_pump_ble = {
 };
 
 /**
- * @file thing description based on HTTP of a pump
- * 
+ * @file thing description based on HTTP of a pump and describes an endpoint
  */
 const td_pump_http = {
   '@context': [
@@ -190,37 +191,52 @@ function initConnection() {
         // Connect to pump BLE device
         await Bluetooth_lib.connectThing(thing);
 
-        console.log("Connection successful!");
+        console.log("Connection successful!\nYou can start...");
     })
     } catch (err) {
       console.error('Script error:', err);
     };
 }
 
-
-// *** HTTP Connection ***
-// start http server and initialize BLE connection
+/**
+ * HTTP Connection
+ * @function app.listen()
+ * @param {Number} port port of connection
+ * @returns a http server and initialize BLE connection
+ */
 app.listen(port, () => {
     console.log(`Test app listening at http://${ip}:${port}`);
     initConnection();
 });
 
-// returns the http thing description of the pump
+/**
+ * @function app.get()
+ * @returns the http thing description of the pump on root directory
+ */
 app.get('/', (req, res) => {
     res.send(td_pump_http);
 });
 
-// get status information about the pump - on or off
+/**
+ * @function app.get()
+ * @returns status information of the pump - on or off
+ */
 app.get('/status', async function(req, res) {
     let status =  await pump_thing.readProperty('status');
     status = await status.value();
     res.send(status.toString());
 });
 
-// USAGE:   POST http://<IP>:<PORT>/power
-//          Type: JSON
-//          Value: value Key: 31
-// NOTE: even if the JSON type is already preset in the "RESTED" Add-On, it is necessary to set it again. Otherwise the query will not work.
+/**
+ * @function app.post()
+ * @param value will send with a post request: valid values are 1 or 0
+ * @returns 'accepted' and will send 1 or 0 to the BLE device or 'Bad Request' and send nothing else
+ * @example use "RESTED" Add-On to send a POST request will turn the power on
+ *    POST http://<IP>:<PORT>/power
+ *    Type: JSON    ( NOTE: even if the JSON type is already preset in the "RESTED" Add-On, it is necessary to set it again.)
+ *    Value: value
+ *    Key: 1
+ */
 app.post('/power', async function(req, res) {
     // parse parameter from body to string
     let value = await JSON.stringify(req.body["value"]); 
