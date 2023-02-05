@@ -1,9 +1,11 @@
-/* 
-    - This gateway works like an adapter. Requests can be made using REST-API over HTTP server. 
-      The requests are then translated at the level of BLE and in this way the devices are controlled. 
-      The WoT Thing Description was used as the description of the interfaces.
-    - Documentation sbo/bdo via firefox and firefox add-on rtf-browser readable
-*/
+/**
+ * @fileoverview
+ * This gateway works like an adapter. Requests can be made using REST-API over HTTP server.
+ * The requests are then translated at the level of BLE and in this way the devices are controlled.
+ * The WoT Thing Description was used as the description of the interfaces.
+ * (https://github.com/wintechis/WoT-Gardening/blob/main/src/gateway.js)
+ * Documentation sbo/bdo via firefox and firefox add-on rtf-browser readable.
+ */
 const {Servient} = require('@node-wot/core');
 const Bluetooth_client_factory = require('Bluetooth-Bindings/dist/src/Bluetooth-client-factory');
 const Bluetooth_lib = require('Bluetooth-Bindings/dist/src/bluetooth/Bluetooth_lib'); 
@@ -11,7 +13,7 @@ const express = require("express");
 const app = express();
 
 const port = 8080;
-const ip = "192.168.1.122";
+const ip = "192.168.1.61";
 
 // middleware for PUSH
 app.use(express.json());
@@ -24,7 +26,10 @@ function sleep(ms) {
 const servient = new Servient();
 servient.addClientFactory(new Bluetooth_client_factory.default());
 
-// thing description pump ble
+/**
+ * @file thing description based on BLE of a pump
+ * 
+ */
 const td_pump_ble = {
   '@context': [
     'https://www.w3.org/2019/wot/td/v1',
@@ -36,7 +41,7 @@ const td_pump_ble = {
     {'@language': 'en'},
   ],
   title: 'Pump',
-  description: 'An EXP32 module to control a pump.',
+  description: 'An ESP32 module to control a pump.',
   securityDefinitions: {
     nosec_sc: {
       scheme: 'nosec',
@@ -73,18 +78,18 @@ const td_pump_ble = {
   },
   actions: {
     power: {
-      type: 'string',
+      type: 'integer',
       format: 'hex',
       observable: false,
       readOnly: false,
       writeOnly: true,
 
       input: {
-        type: 'string',
+        type: 'integer',
         format: 'hex',
-        enum: ['30', '31'],
+        enum: ['0', '1'],
         'bdo:bytelength': 1,
-        description: 'Turn power on with [0x31] or off with [0x30].',
+        description: 'Turns power on with [0x1] or off with [0x0].',
       },
 
       forms: [
@@ -99,7 +104,10 @@ const td_pump_ble = {
   },
 };
 
-// http thing description for pump
+/**
+ * @file thing description based on HTTP of a pump
+ * 
+ */
 const td_pump_http = {
   '@context': [
     'https://www.w3.org/2019/wot/td/v1',
@@ -107,7 +115,7 @@ const td_pump_http = {
     {'@language': 'en'},
   ],
   title: 'Pump',
-  description: 'An EXP32 module to control a pump.',
+  description: 'An ESP32 module to control a pump.',
   securityDefinitions: {
     nosec_sc: {
       scheme: 'nosec',
@@ -145,8 +153,8 @@ const td_pump_http = {
       input: {
         type: 'string',
         format: 'hex',
-        enum: ['30', '31'],
-        description: 'Turn power on with [0x31] or off with [0x30].',
+        enum: ['0', '1'],
+        description: 'Turns power on with [0x1] or off with [0x0].',
       },
 
       forms: [
@@ -164,13 +172,16 @@ const td_pump_http = {
 // this variable will initialize with the function call of 'initConnection' and is used for the http connection
 let pump_thing
 
-
-// *** BLE Connection ***
-// initConnection() works on @bluetooth-bindings and @node-wot; it consumes the thing description and creates a connection between RPi and the pump via BLE
+/**
+ * BLE Connection
+ * @function initConnection() works on @bluetooth-bindings and @node-wot
+ * it consumes the thing description and thereby initializes a BLE connection.
+ * @returns connection between RPi and the pump via BLE
+ */
 function initConnection() {
     try {
       servient.start().then(async WoT => {
-        console.log("Load thing description of pump BLE...");
+        console.log("The thing description of pump BLE is loaded...");
         let thing = await WoT.consume(td_pump_ble);
 
         // declare thing description outside from this function, so you get access to this variable
@@ -185,13 +196,6 @@ function initConnection() {
       console.error('Script error:', err);
     };
 }
-
-// TODO is closeConnection relevant?
-/*function closeConnection() {
-    Bluetooth_lib.close();
-    console.log("Connection closed.");
-}*/
-
 
 
 // *** HTTP Connection ***
@@ -221,11 +225,11 @@ app.post('/power', async function(req, res) {
     // parse parameter from body to string
     let value = await JSON.stringify(req.body["value"]); 
 
-    if(value === "31") {
-        pump_thing.invokeAction('power', "31");
+    if(value === "1") {
+        await pump_thing.invokeAction('power', 1);
         res.status(202).send("Accepted");
-    } else if (value === "30") {
-        pump_thing.invokeAction('power', "30");
+    } else if (value === "0") {
+        await pump_thing.invokeAction('power', 0);
         res.status(202).send("Accepted");
     } else {
         res.status(400).send("Bad Request");        
