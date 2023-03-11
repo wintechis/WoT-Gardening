@@ -14,7 +14,7 @@ const express = require("express");
 const app = express();
 
 const port = 8080;
-const ip = "192.168.1.61";
+const ip = "192.168.1.171";
 
 // middleware for PUSH requests
 app.use(express.json());
@@ -26,7 +26,7 @@ const servient = new Servient();
 servient.addClientFactory(new Bluetooth_client_factory.default());
 
 /**
- * @file thing description based on BLE of a pump and describes an endpoint
+ * @file td_pump_ble thing description based on BLE of a pump and describes an endpoint
  */
 const td_pump_ble = {
   '@context': [
@@ -103,7 +103,7 @@ const td_pump_ble = {
 };
 
 /**
- * @file thing description based on HTTP of a pump and describes an endpoint
+ * @file td_pump_http thing description based on HTTP of a pump and describes an endpoint
  */
 const td_pump_http = {
   '@context': [
@@ -196,35 +196,35 @@ function initConnection() {
 
 /**
  * HTTP Connection
- * @function app.listen()
+ * @function listen() establishment of a connection
  * @param {Number} port port of connection
  * @returns a http server and initialize BLE connection
  */
-app.listen(port, () => {
+app.listen(port, async function listen() {
     console.log(`Test app listening at http://${ip}:${port}`);
     initConnection();
 });
 
 /**
- * @function app.get()
+ * @function getTD() get thing description
  * @returns the http thing description of the pump on root directory
  */
-app.get('/', (req, res) => {
+app.get('/', function getTD(req, res) {
     res.send(td_pump_http);
-});
+})
 
 /**
- * @function app.get()
- * @returns status information of the pump - on or off
+ * @function getStatus() get status information of the pump
+ * @returns 'on' or 'off'
  */
-app.get('/status', async function(req, res) {
+app.get('/status', async function getStatus(req, res) {
     let status =  await pump_thing.readProperty('status');
     status = await status.value();
     res.send(status.toString());
 });
 
 /**
- * @function app.post()
+ * @function setPower() set power 'on' or 'off' for the pump
  * @param value will send with a post request: valid values are 1 or 0
  * @returns 'accepted' and will send 1 or 0 to the BLE device or 'Bad Request' and send nothing else
  * @example use "RESTED" Add-On to send a POST request will turn the power on
@@ -233,7 +233,7 @@ app.get('/status', async function(req, res) {
  *    Value: value
  *    Key: 1
  */
-app.post('/power', async function(req, res) {
+app.post('/power', async function setPower(req, res) {
     // parse parameter from body to string
     let value = await JSON.stringify(req.body["value"]); 
 
