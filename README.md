@@ -14,7 +14,7 @@
 - [x] **MUST** As an operator, I want to read and change the status of the pump via BLE and the Web of Things.
 - [x] **MUST** As an operator, I want to access a Gateway via HTTP and interact with the BLE devices based on the Web of Things.
 - [ ] ~~**SHOULD** As an operator, I want a WoT Gateway that can consume BLE Thing Descriptions and expose converted HTTP Thing Descriptions.~~
-- [ ] ~~**CAN** As an operator, I want to access the device using Read-Write Linked Data.~~
+- [ ] ~~**CAN** As an operator, I want to access the device using Read-Write Linked Data.~~ <br>
     (Note: Since my partner left the group, the user stores have reduced)
 ***
 
