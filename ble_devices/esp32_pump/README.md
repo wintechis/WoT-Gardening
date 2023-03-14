@@ -25,13 +25,5 @@ This information provides information about the MAC address used, the service UU
 ### Connection via Apps
 After the program code has been uploaded, the ESP32 module is waiting to connect. Using an app like 'nRF Connect' or 'LightBlue' you can find the device under the name 'ESP32_ble'. After a connection is established you can then decide which characteristic, i.e. which channel you want to open for communication (tx/rx). That means, either you receive messages or you send them directly to the module.
 
-## TODO
-The code is still based on the function to control the internal LED light of the ESP32 module. As soon as a Bluetooth LE connection is established, the values 'led_on' and 'led_off' can be passed as parameters.
-- [x] Simply True or False should be enough here or 1 and 0.
-- [ ] Change function and function call 'putLED_on_off' to 'power_on_off' and remove LED_BUILDIN variable. Otherwise, you can keep this code and save it under a new folder 'test'. This might make the most sense.
-
-It is also possible to receive values from the ESP32 module. This is done via the Serial Monitor in the Arduino IDE.
-- [ ] This function could be deactivated if necessary. Actually, we only need write access. However, we could later query the status, i.e. whether the pump is currently on or off.
-
-A sketch of the circuit diagram can also be inserted here in the folder. A circuit diagram that includes the integration of the pump, the Arduino Relay Board & Co.
-- [ ] Sketch of circuit diagram (+pump & Co.)
+#### Notes
+In the test folder you see test.cpp. This program should make it possible to control a connection using BLE only. No pump and no circuit must be integrated here. If a PUSH command is to change the status, the built-in LED lights up for this.

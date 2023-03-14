@@ -15,19 +15,8 @@
 
 #define bleEspName "ESP32_ble"
 
-// create new UUID https://www.uuidgenerator.net/
-// 'service' UUID is a collection of related information
-#define SERVICE_UUID "c9c0ba7c-72e1-11ed-a1eb-0242ac120002"
-
-// characteristic UUIDs for ble device/service
-// RX - a client WRITE on this channel AND the esp32 server READ from this channel
-#define CHARACTERISTIC_UUID_RX "2e48ebbe-72e6-11ed-a1eb-0242ac120002"
-
-// TX - transfer,- what esp32 server will sent
-#define CHARACTERISTIC_UUID_TX "35dd80c4-72e6-11ed-a1eb-0242ac120002"
-
 bool deviceConnected = false; // default value
-int rxload = 0x42; // it's just an initialized value that should not be 0 or 1
+int rxload = 0x42; // it's just a guarantee that the only valid values are 1 or 0
 
 BLECharacteristic *bleCharacteristic;
 
@@ -37,11 +26,18 @@ char* txValue = "off";
 long lastMsg = 0;
 long lastMsgSend = 0;
 
-// initialize and control relais of '4 Relais Shield Arduino'
-int relay1_1 = 12;
-int relay1_2 = 14;
-int relay2_1 = 13;
-int relay2_2 = 15;
+// create new UUID https://www.uuidgenerator.net/
+// 'service' UUID is a collection of related information
+#define SERVICE_UUID "c9c0ba7c-72e1-11ed-a1eb-0242ac120002"
+
+// characteristic UUIDs for ble device/service
+// RX - a client WRITE on this channel AND the esp32 server READ from this channel
+#define CHARACTERISTIC_UUID_RX "2e48ebbe-72e6-11ed-a1eb-0242ac120002"
+// TX - transfer,- what esp32 server will sent
+#define CHARACTERISTIC_UUID_TX "35dd80c4-72e6-11ed-a1eb-0242ac120002"
+
+// set const for LED PIN - for testing
+#define LED_BUILTIN 2
 
 // setup callbacks onConnect and onDisconnect
 class MyServerCallbacks: public BLEServerCallbacks {
@@ -57,9 +53,11 @@ class MyServerCallbacks: public BLEServerCallbacks {
 class MyCallbacks: public BLECharacteristicCallbacks {
     void onWrite(BLECharacteristic *pCharacteristic) {
       std::string rxValue = pCharacteristic->getValue();
-
-      if (rxValue.length() > 0) {
-        for (int i = 0; i < rxValue.length(); i++) {
+      
+      if (rxValue.length() > 0) { 
+        rxload = 42;
+        Serial.println("length = " + rxValue.length());
+        for (int i = 0; i < rxValue.length(); i++) { 
           rxload = (int)rxValue[i];
         }
       }
@@ -72,7 +70,7 @@ class MyCallbacks: public BLECharacteristicCallbacks {
     connection via the characteristics rx/tx is established
 */
 void setupBLE() {
-
+  
   // create/init ble device
   BLEDevice::init(bleEspName);
 
@@ -98,7 +96,7 @@ void setupBLE() {
   bleService->start();
   // retrieve the advertising object that can be used to advertise the existence of the server.
   bleServer->getAdvertising()->start();
-
+  
   Serial.println("...\nWaiting a client connection to notify...");
 }
 
@@ -124,22 +122,17 @@ void print_device_information() {
   Serial.println("Characteristic UUID RX:\t\t" + String(CHARACTERISTIC_UUID_RX));
   Serial.println("Characteristic UUID TX:\t\t" + String(CHARACTERISTIC_UUID_TX));
   Serial.println("### GATT server");
-  Serial.println("gatt://<MAC>/<service>/<characteristic>");
+  Serial.println("gatt://<MAC>/<service>/<characteristic>");  
   Serial.println("____________________________________________________________________\n");
+
 }
 
 void setup() {
   // start serial communication
   Serial.begin(9600);
 
-  // set the LED pin mode - to see if it works
-  pinMode(5, OUTPUT);
-
-  // initialize pin modes for relais
-  pinMode(relay1_1, OUTPUT);
-  pinMode(relay1_2, OUTPUT);
-  pinMode(relay2_1, OUTPUT);
-  pinMode(relay2_2, OUTPUT);
+  // for testing set led buildin
+  pinMode(LED_BUILTIN, OUTPUT);
 
   // setup ble device
   setupBLE();
@@ -148,25 +141,18 @@ void setup() {
   print_device_information();
 }
 
-// turn power 'on' or 'off'
-// on :=  0x1
-// off := 0x0
-void putPower_on_off(int rx) {
+// put intern LED 'on' or 'off'
+// on :=  0x1 
+// off := 0x0 
+void putLED_on_off(int rx) {
   if(rx == 0x1) {
-    Serial.println("Power on.");
-    digitalWrite(relay2_1, LOW);
-    digitalWrite(relay2_2, LOW);
-    delay(200);
-    digitalWrite(relay1_1, HIGH);
-    digitalWrite(relay1_2, HIGH);
+    Serial.println("LED on.");
+    digitalWrite(LED_BUILTIN, HIGH);
     // set status 'on'
     setStatus("on");
   } else if(rx == 0x0) {
-    Serial.println("Power off.");
-    digitalWrite(relay1_1, LOW);
-    digitalWrite(relay1_2, LOW);
-    digitalWrite(relay2_1, LOW);
-    digitalWrite(relay2_2, LOW);
+    Serial.println("LED off.");
+    digitalWrite(LED_BUILTIN, LOW);
     setStatus("off");
   } else {
     Serial.println("Valid values are: 0x0 | 0x1");
@@ -187,11 +173,12 @@ void getStatus() {
 
 void loop() {
   long now = millis();
-
+  
   // checks all 0.1 seconds if a new message has received
   if (now - lastMsg > 100) {
       if (deviceConnected && (rxload == 0x1 || rxload == 0x0)) {
-        putPower_on_off(rxload);
+        putLED_on_off(rxload);
+        rxload = 42;
     }
     lastMsg = now;
   }
